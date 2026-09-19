@@ -1,0 +1,674 @@
+﻿<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ખેડૂત મિત્ર Pro - આંતરોલ પ્રાથમિક શાળા</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e7d32">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #eef7f2;
+            color: #2d3748;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .header-card {
+            background: linear-gradient(135deg, #1b5e20, #2e7d32);
+            color: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            margin-bottom: 15px;
+        }
+
+        .school-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .school-location {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 8px;
+        }
+
+        .project-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #ffe082;
+            margin-top: 5px;
+        }
+
+       .credits-bar {
+    background: #ffffff;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.credits-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.95rem;
+}
+
+/* વિદ્યાર્થી બેજ નો કલર */
+.student-badge {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+/* માર્ગદર્શક બેજ નો કલર */
+.mentor-badge {
+    background-color: #e0f2f1;
+    color: #00695c;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+/* સામાન્ય નામ શૈલી */
+.person-name {
+    font-weight: 800; /* ઘાટા (Bold) અક્ષરો */
+    font-size: 1rem;
+}
+
+/* વિદ્યાર્થીના નામનો કલર (ઘાટો લીલો) */
+.student-name {
+    color: #1b5e20;
+}
+
+/* માર્ગદર્શકના નામનો કલર (ઘાટો બ્લુ/ટીલ) */
+.mentor-name {
+    color: #004d40;
+}
+
+
+        .main-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #00897b, #004d40);
+        }
+
+        .btn-voice {
+            background: linear-gradient(135deg, #ff9800, #e65100);
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #video-container, #image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        #webcam-video, #preview-img {
+            border-radius: 12px;
+            border: 3px solid #81c784;
+            max-width: 100%;
+            height: auto;
+            max-height: 250px;
+            object-fit: cover;
+        }
+
+        .results-title {
+            font-weight: bold;
+            color: #1b5e20;
+            margin-bottom: 10px;
+            text-align: left;
+            font-size: 1.05rem;
+        }
+
+        .prediction-badge {
+            background-color: #f1f8e9;
+            border-left: 5px solid #4caf50;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
+        .label-text {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 4px;
+        }
+
+        .progress-bar-bg {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: #4caf50;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .info-card {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: left;
+            display: none;
+        }
+
+        .treatment-card {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+        }
+
+        .prevention-card {
+            background: #e0f2f1;
+            border: 1px solid #b2dfdb;
+        }
+
+        .info-title {
+            font-weight: bold;
+            color: #1b5e20;
+            margin-bottom: 5px;
+        }
+
+        .info-text {
+            font-size: 0.9rem;
+            color: #37474f;
+            line-height: 1.4;
+        }
+
+        .weather-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 500px;
+            padding: 15px;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .weather-title {
+            font-weight: bold;
+            color: #1b5e20;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .alert-box {
+            background-color: #ffebee;
+            border-left: 5px solid #f44336;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 6px;
+            color: #c62828;
+            font-size: 0.88rem;
+            display: none;
+        }
+
+        #error-log {
+            color: #d32f2f;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-card">
+        <div class="school-name">🏫 આંતરોલ પ્રાથમિક શાળા</div>
+        <div class="school-location">તાલુકો - થરાદ, જીલ્લો - બનાસકાંઠા</div>
+        <div class="project-title">🌱 AI ખેડૂત મિત્ર Pro (પાક રોગ નિદાન)</div>
+    </div>
+
+    <div class="credits-bar">
+    <div class="credits-section">
+        <span class="role-badge student-badge">👨‍🎓 વિદ્યાર્થી ૧:</span>
+        <span class="person-name student-name">આરાધ્યા પટેલ</span>
+    </div>
+    <div class="credits-section">
+        <span class="role-badge student-badge">👨‍🎓 વિદ્યાર્થી ૨:</span>
+        <span class="person-name student-name">મિત્તલ ચૌધરી</span>
+    </div>
+    <div class="credits-section">
+        <span class="role-badge mentor-badge">👨‍🏫 માર્ગદર્શક:</span>
+        <span class="person-name mentor-name">પિનલ સોલંકી</span>
+    </div>
+</div>
+
+    <!-- Live Weather Alert Card -->
+    <div class="weather-card">
+        <div class="weather-title">☀️ લાઈવ હવામાન અને રોગની આગાહી</div>
+        <div id="weather-info" style="font-size: 0.9rem; color: #455a64;">હવામાન લોડ થઈ રહ્યું છે...</div>
+        <div id="disease-alert" class="alert-box"></div>
+    </div>
+
+    <div class="main-card">
+        <div class="button-group">
+            <button class="btn" onclick="startCamera()">📷 કૅમેરા ચાલુ કરો</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">📁 ફોટો પસંદ કરો</button>
+            <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFileUpload(event)">
+        </div>
+
+        <div id="video-container">
+            <video id="webcam-video" autoplay playsinline style="display:none;"></video>
+        </div>
+        <div id="image-container">
+            <img id="preview-img" style="display:none;" alt="Uploaded Leaf">
+        </div>
+        
+        <div id="results-title" class="results-title" style="display:none;">📊 રોગનું વિશ્લેષણ (Analysis):</div>
+        <div id="label-container"></div>
+        
+        <div id="treatment-card" class="info-card treatment-card">
+            <div class="info-title">💊 ત્વરિત ઈલાજ / દવાની સલાહ:</div>
+            <div id="treatment-text" class="info-text">--</div>
+        </div>
+
+        <div id="prevention-card" class="info-card prevention-card">
+            <div class="info-title">🛡️ ભવિષ્યમાં રોગથી બચવાના આગોતરા ઉપાયો:</div>
+            <div id="prevention-text" class="info-text">--</div>
+        </div>
+
+        <button id="voice-btn" class="btn btn-voice" style="display:none;" onclick="speakGujarati()">🔊 ગુજરાતીમાં અવાજથી સાંભળો</button>
+        <button id="info-btn" class="btn btn-secondary" style="display:none; margin-top:10px; width:100%;" onclick="openModal()">ℹ️ વધુ માહિતી (વપરાશનું પ્રમાણ)</button>
+
+        <!-- પોપ-અપ (Modal) બોક્સ -->
+        <div id="info-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center;">
+            <div style="background:white; padding:20px; border-radius:12px; max-width:90%; width:400px; text-align:left; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+                <h3 style="color:#1b5e20; margin-bottom:10px;">🧪 દવા અને ખાતરના વપરાશનું પ્રમાણ</h3>
+                <div id="modal-content" style="font-size:0.9rem; color:#333; line-height:1.5;"></div>
+                <button class="btn" style="margin-top:15px; width:100%; background:#d32f2f;" onclick="closeModal()">બંધ કરો</button>
+            </div>
+        </div>
+
+        <div id="error-log"></div>
+    </div>
+
+    <div class="footer">
+        © આંતરોલ પ્રાથમિક શાળા - ગણિત-વિજ્ઞાન અને પર્યાવરણ પ્રદર્શન
+    </div>
+
+    <script>
+        const URL = "./my_model/";
+        let model, labelContainer, maxPredictions;
+        let videoElement = document.getElementById("webcam-video");
+        let isCameraActive = false;
+        let currentSpeechText = "";
+        let currentDosageInfo = "";
+
+        const diseaseData = {
+            // --- ૧. સ્વસ્થ પાક ---
+            "Healthy Leaf": {
+                treatment: "✅ પાક સંપૂર્ણપણે સ્વસ્થ છે! કોઈ દવાની જરૂર નથી. પોષક તત્વો માટે ૧૯:૧૯:૧૯ ખાતરનો છંટકાવ કરી શકો છો.",
+                prevention: "• ખેતરમાં સરખો ભેજ જાળવવો.\n• સમતોલ ખાતર (NPK) આપવું અને ખેતરની સમયસર સફાઈ રાખવી.",
+                dosageInfo: "<strong>૧૯:૧૯:૧૯ (NPK) ખાતર:</strong><br>• <strong>પ્રમાણ:</strong> ૧૫ લીટર પાણીના પંપમાં ૭૫ થી ૧૦૦ ગ્રામ.<br>• <strong>ફાયદો:</strong> પાકને ત્વરિત પોષણ અને નવી તાકાત મળે છે."
+            },
+            "Healthy": {
+                treatment: "✅ પાક સંપૂર્ણપણે સ્વસ્થ છે! કોઈ દવાની જરૂર નથી. પોષક તત્વો માટે ૧૯:૧૯:૧૯ ખાતરનો છંટકાવ કરી શકો છો.",
+                prevention: "• ખેતરમાં સરખો ભેજ જાળવવો.\n• સમતોલ ખાતર (NPK) આપવું અને ખેતરની સમયસર સફાઈ રાખવી.",
+                dosageInfo: "<strong>૧૯:૧૯:૧૯ (NPK) ખાતર:</strong><br>• <strong>પ્રમાણ:</strong> ૧૫ લીટર પાણીના પંપમાં ૭૫ થી ૧૦૦ ગ્રામ.<br>• <strong>ફાયદો:</strong> પાકને ત્વરિત પોષણ મળે છે."
+            },
+            "healthy": {
+                treatment: "✅ પાક સંપૂર્ણપણે સ્વસ્થ છે! કોઈ દવાની જરૂર નથી. પોષક તત્વો માટે ૧૯:૧૯:૧૯ ખાતરનો છંટકાવ કરી શકો છો.",
+                prevention: "• ખેતરમાં સરખો ભેજ જાળવવો.\n• સમતોલ ખાતર (NPK) આપવું અને ખેતરની સમયસર સફાઈ રાખવી.",
+                dosageInfo: "<strong>૧૯:૧૯:૧૯ (NPK) ખાતર:</strong><br>• <strong>પ્રમાણ:</strong> ૧૫ લીટર પાણીના પંપમાં ૭૫ થી ૧૦૦ ગ્રામ."
+            },
+
+            // --- ૨. ગતિય/સુકારો (Blight Diseases) ---
+            "Early Blight": {
+                treatment: "💊 મેન્કોઝેબ ૭૫% WP (૩૦ ગ્રામ) અથવા ક્લોરોથાલોનીલ (૨૫ ગ્રામ) ૧૫ લીટર પાણીના પંપમાં ભેળવી છંટકાવ કરવો.",
+                prevention: "• પાંદડા પર વધુ પડતું પાણી જમા ન રહે તેનું ધ્યાન રાખવું.\n• રોગગ્રસ્ત પાંદડાં તોડીને ખેતર બહાર નાશ કરવો.",
+                dosageInfo: "<strong>દવાનું ચોક્કસ પ્રમાણ:</strong><br>• <strong>મેન્કોઝેબ ૭૫% WP:</strong> ૧૫ લીટર પંપમાં ૨૫ થી ૩૦ ગ્રામ.<br>• <strong>ક્લોરોથાલોનીલ ૭૫% WP:</strong> ૧૫ લીટર પંપમાં ૨૫ ગ્રામ."
+            },
+            "Late Blight": {
+                treatment: "💊 મેટાલક્ષિલ + મેન્કોઝેબ (૨૫ ગ્રામ) અથવા કોપર ઓક્સીક્લોરાઇડ (૩૦ ગ્રામ) ૧૫ લીટર પાણીમાં છાંટવી.",
+                prevention: "• ખેતરમાં પાણી જમા ન થવા દેવું અને નિતાર શક્તિ સારી રાખવી.\n• પ્રમાણિત બિયારણ વાપરવું.",
+                dosageInfo: "<strong>દવાનું ચોક્કસ પ્રમાણ:</strong><br>• <strong>મેટાલક્ષિલ ૮% + મેન્કોઝેબ ૬૪% WP:</strong> ૧૫ લીટર પંપમાં ૨૫ ગ્રામ.<br>• <strong>કોપર ઓક્સીક્લોરાઇડ ૫૦% WP:</strong> ૧૫ લીટર પંપમાં ૩૦ ગ્રામ."
+            },
+            "Alternaria Blight": {
+                treatment: "💊 કોપર ઓક્સીક્લોરાઇડ ૫૦% WP (૩૦ ગ્રામ) અથવા મેન્કોઝેબ (૨૫ ગ્રામ) ૧૫ લીટર પાણીમાં ભેળવી છંટકાવ કરવો.",
+                prevention: "• પાક પર વધુ પડતો નાઇટ્રોજન (યુરિયા) નો ઉપયોગ ન કરવો.\n• યોગ્ય નિતાર વાળી જમીન પસંદ કરવી.",
+                dosageInfo: "<strong>દવાનું ચોક્કસ પ્રમાણ:</strong><br>• <strong>કોપર ઓક્સીક્લોરાઇડ ૫૦% WP:</strong> ૧૫ લીટર પંપમાં ૩૦ ગ્રામ."
+            },
+
+            // --- ૩. ટપકાં અને ગીરીના રોગો (Spots & Rust) ---
+            "Tikka Disease": {
+                treatment: "💊 મેન્કોઝેબ ૭૫% WP (૩૦ ગ્રામ) અથવા કાર્બેન્ડાઝીમ (૧૦ ગ્રામ) ૧૫ લીટર પાણીમાં ભેળવી છંટકાવ કરવો.",
+                prevention: "• વાવણી પહેલાં બિયારણને ટ્રાઇકોડર્મા (૪ ગ્રામ/કિલો) ની પટ આપવી.\n• પાકની ફેરબદલી કરવી.",
+                dosageInfo: "<strong>દવાનું ચોક્કસ પ્રમાણ:</strong><br>• <strong>મેન્કોઝેબ ૭૫% WP:</strong> ૧૫ લીટર પંપમાં ૨૫ થી ૩૦ ગ્રામ.<br>• <strong>કાર્બેન્ડાઝીમ:</strong> ૧૫ લીટર પંપમાં ૧૦ થી ૧૫ ગ્રામ."
+            },
+            "Rust Disease": {
+                treatment: "💊 ટેબુકોનાઝોલ ૨૫.૯% EC (૧૫ મિલી) અથવા હેક્ઝાકોનાઝોલ (૨૦ મિલી) ૧૫ લીટર પાણીમાં સવારે કે સાંજે છાંટવી.",
+                prevention: "• રોગ પ્રતિકારક જાતોનું વાવેતર કરવું.\n• બે છોડ વચ્ચે યોગ્ય અંતર રાખવું.",
+                dosageInfo: "<strong>દવાનું ચોક્કસ પ્રમાણ:</strong><br>• <strong>ટેબુકોનાઝોલ ૨૫.૯% EC:</strong> ૧૫ લીટર પંપમાં ૧૫ મિલી.<br>• <strong>હેક્ઝાકોનાઝોલ:</strong> ૧૫ લીટર પંપમાં ૨૦ મિલી."
+            },
+            "Bacterial Spot": {
+                treatment: "💊 કોપર ઓક્સીક્લોરાઇડ (૩૦ ગ્રામ) સાથે સ્ટ્રેપ્ટોસાઇક્લીન (૧ થી ૨ ગ્રામ) ૧૫ લીટર પાણીમાં ભેળવી છાંટવું.",
+                prevention: "• પ્રમાણિત બીજ વાપરવા.\n• રોગગ્રસ્ત છોડને ખેતરમાંથી દૂર કરી નાશ કરવો.",
+                dosageInfo: "<strong>દવાનું ચોક્કસ પ્રમાણ:</strong><br>• <strong>કોપર ઓક્સીક્લોરાઇડ:</strong> ૩૦ ગ્રામ.<br>• <strong>સ્ટ્રેપ્ટોસાઇક્લીન:</strong> ૧.૫ ગ્રામ (૧૫ લીટર પાણી માટે)."
+            },
+            "Leaf Spot": {
+                treatment: "💊 કાર્બેન્ડાઝીમ ૧૨% + મેન્કોઝેબ ૬૩% WP (૩૦ ગ્રામ) ૧૫ લીટર પાણીમાં છંટકાવ કરવો.",
+                prevention: "• જમીનમાં ભેજનું પ્રમાણ માપસર રાખવું.\n• નીંદણ સમયસર દૂર કરવું.",
+                dosageInfo: "<strong>દવાનું ચોક્કસ પ્રમાણ:</strong><br>• <strong>સાફ (SAAF - Carbendazim+Mancozeb):</strong> ૧૫ લીટર પંપમાં ૩૦ ગ્રામ."
+            },
+
+            // --- ૪. ફૂગ અને વાયરસ (Mildew, Mold & Virus) ---
+            "Powdery Mildew": {
+                treatment: "💊 દ્રાવ્ય સલ્ફર ૮૦% WP (૩૦ ગ્રામ) અથવા કિનલફોસ/ડીનોકેપ ૧૫ લીટર પાણીમાં ભેળવી છાંટવું.",
+                prevention: "• ખેતરમાં સૂર્યપ્રકાશ પૂરતો આવે તે મુજબ વાવેતર કરવું.",
+                dosageInfo: "<strong>દવાનું ચોક્કસ પ્રમાણ:</strong><br>• <strong>વોટેબલ સલ્ફર ૮૦% WP:</strong> ૧૫ લીટર પંપમાં ૩૦ ગ્રામ."
+            },
+            "Leaf Mold": {
+                treatment: "💊 ફ્લુઓપીરામ + ટેબુકોનાઝોલ (૧૫ મિલી) અથવા મેન્કોઝેબ (૩૦ ગ્રામ) ૧૫ લીટર પાણીમાં છાંટવું.",
+                prevention: "• ખેતરમાં હવા-ઉજાસ જળવાઈ રહે તેવું આયોજન કરવું.",
+                dosageInfo: "<strong>દવાનું ચોક્કસ પ્રમાણ:</strong><br>• <strong>લિક્વિડ ફંગીસાઇડ:</strong> ૧૫ લીટર પંપમાં ૧૫ મિલી."
+            },
+            "Mosaic Virus": {
+                treatment: "💊 વાયરસ માટે ડાયરેક્ટ દવા નથી, પણ ફેલાવનાર સફેદ માખી/જીવાત માટે ઇમિડાક્લોપ્રિડ (૫ મિલી) છાંટવું.",
+                prevention: "• રોગગ્રસ્ત છોડ તરત ઉપાડીને સળગાવી દેવો.\n• ખેતરની ચારેય બાજુ પીળા ચીકણા પટ્ટા (Yellow Sticky Traps) લગાવવા.",
+                dosageInfo: "<strong>જીવાત નિયંત્રણ (માખી માટે):</strong><br>• <strong>ઇમિડાક્લોપ્રિડ ૧૭.૮% SL:</strong> ૧૫ લીટર પંપમાં ૫ મિલી."
+            },
+            "Leaf Curl": {
+                treatment: "💊 મોલો-મશી અને સફેદ માખીના નિયંત્રણ માટે એસિટામાપ્રિડ (૫ ગ્રામ) અથવા ડાયમેથોએટ (૨૦ મિલી) છાંટવું.",
+                prevention: "• શરૂઆતના તબક્કે નીમ ઓઇલ (૫૦ મિલી/પંપ) નો છંટકાવ કરવો.",
+                dosageInfo: "<strong>દવાનું ચોક્કસ પ્રમાણ:</strong><br>• <strong>એસિટામાપ્રિડ ૨૦% SP:</strong> ૧૫ લીટર પંપમાં ૫ ગ્રામ."
+            },
+
+            // --- ૫. ફોલબેક (Default) ---
+            "Default": {
+                treatment: "💊 પાકનું યોગ્ય નિરીક્ષણ કરી નજીકના કૃષિ સેવા કેન્દ્ર અથવા નિષ્ણાતની સલાહ મુજબ જંતુનાશક વાપરવી.",
+                prevention: "• નિયમિતપણે ખેતરની મુલાકાત લેવી અને પૂર્વ-બચાવના ઉપાયો યોજવા.",
+                dosageInfo: "<strong>સામાન્ય માર્ગદર્શિકા:</strong><br>• કોઈપણ દવાનો ઉપયોગ કરતા પહેલા કૃષિ નિષ્ણાત કે કૃષિ સેવા કેન્દ્રની સલાહ લેવી."
+            }
+        };
+
+        async function initModel() {
+            if (!model) {
+                // કેપિટલ અથવા સ્મોલ ફોલ્ડર પાથ પ્રોબ્લેમ સોલ્વ કરવા માટે 
+                const modelURL = URL + "model.json";
+                const metadataURL = URL + "metadata.json";
+                try {
+                    model = await tmImage.load(modelURL, metadataURL);
+                    maxPredictions = model.getTotalClasses();
+                } catch (e) {
+                    console.error("Model load error:", e);
+                    document.getElementById("error-log").innerHTML = "મોડેલ લોડ કરવામાં ભૂલ આવી. ફોલ્ડર પાથ 'my_model' ચકાસો.";
+                }
+            }
+        }
+
+        async function startCamera() {
+            const errorDiv = document.getElementById("error-log");
+            document.getElementById("preview-img").style.display = "none";
+            errorDiv.innerHTML = "";
+
+            try {
+                await initModel();
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { exact: "environment" } }
+                }).catch(async () => {
+                    return await navigator.mediaDevices.getUserMedia({ video: true });
+                });
+
+                videoElement.srcObject = stream;
+                videoElement.style.display = "block";
+                isCameraActive = true;
+
+                setupUI();
+                videoElement.onloadedmetadata = () => {
+                    predictLoop();
+                };
+            } catch (err) {
+                errorDiv.innerHTML = "કૅમેરા શરુ ન થઈ શક્યો. પર્મિશન અથવા લિંક HTTPS વાળી છે કે નહીં તે ચકાસો.";
+            }
+        }
+
+        async function predictLoop() {
+            if (isCameraActive && videoElement.readyState === 4) {
+                await predict(videoElement);
+                requestAnimationFrame(predictLoop);
+            }
+        }
+
+        // ફોટો અપલોડ માટેનું પરફેક્ટ ફંક્શન
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // જો કૅમેરા ચાલુ હોય તો બંધ કરવો
+            isCameraActive = false;
+            if (videoElement.srcObject) {
+                videoElement.srcObject.getTracks().forEach(track => track.stop());
+            }
+            videoElement.style.display = "none";
+
+            const imgElement = document.getElementById("preview-img");
+            
+            // FileReader થી ઈમેજ વાંચવી
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imgElement.src = e.target.result;
+                imgElement.style.display = "block";
+
+                // ઈમેજ સ્ક્રીન પર લોડ થઈ જાય પછી જ એનાલિસિસ કરવું
+                imgElement.onload = async function() {
+                    await initModel();
+                    setupUI();
+                    await predict(imgElement);
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function setupUI() {
+            document.getElementById("results-title").style.display = "block";
+            labelContainer = document.getElementById("label-container");
+            labelContainer.innerHTML = "";
+            
+            for (let i = 0; i < maxPredictions; i++) {
+                const badge = document.createElement("div");
+                badge.className = "prediction-badge";
+                badge.innerHTML = `
+                    <div class="label-text">
+                        <span class="class-name">--</span>
+                        <span class="class-pct">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill"></div>
+                    </div>
+                `;
+                labelContainer.appendChild(badge);
+            }
+        }
+
+        async function predict(imageSource) {
+            const prediction = await model.predict(imageSource);
+            let topClass = "";
+            let highestProb = 0;
+
+            for (let i = 0; i < maxPredictions; i++) {
+                const className = prediction[i].className;
+                const prob = prediction[i].probability;
+                const percentage = (prob * 100).toFixed(0) + "%";
+                
+                const badge = labelContainer.childNodes[i];
+                if (badge) {
+                    badge.querySelector(".class-name").innerText = className;
+                    badge.querySelector(".class-pct").innerText = percentage;
+                    badge.querySelector(".progress-bar-fill").style.width = percentage;
+                }
+
+                if (prob > highestProb) {
+                    highestProb = prob;
+                    topClass = className;
+                }
+            }
+
+            const treatmentCard = document.getElementById("treatment-card");
+            const preventionCard = document.getElementById("prevention-card");
+            const voiceBtn = document.getElementById("voice-btn");
+            
+            treatmentCard.style.display = "block";
+            preventionCard.style.display = "block";
+            voiceBtn.style.display = "block";
+
+            const data = diseaseData[topClass] || diseaseData["Default"];
+            document.getElementById("treatment-text").innerText = data.treatment;
+            document.getElementById("prevention-text").innerText = data.prevention;
+
+            currentSpeechText = topClass + " દર્શાવેલ છે. ઈલાજ: " + data.treatment;
+
+            // 👉 પોપ-અપ માટે આ લાઈનો
+            currentDosageInfo = data.dosageInfo;
+            document.getElementById("info-btn").style.display = "block";
+        }
+
+        // Gujarati Voice Output
+        function speakGujarati() {
+            if ('speechSynthesis' in window && currentSpeechText !== "") {
+                window.speechSynthesis.cancel();
+                const speech = new SpeechSynthesisUtterance(currentSpeechText);
+                speech.lang = 'gu-IN';
+                speech.rate = 0.9;
+                window.speechSynthesis.speak(speech);
+            } else {
+                alert("અવાજ સપોર્ટ ઉપલબ્ધ નથી.");
+            }
+        }
+
+        // Live Weather Fetch & Alert
+        async function fetchWeather() {
+            const weatherDiv = document.getElementById('weather-info');
+            const alertBox = document.getElementById('disease-alert');
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    try {
+                        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m`);
+                        const data = await response.json();
+                        
+                        const temp = data.current.temperature_2m;
+                        const humidity = data.current.relative_humidity_2m;
+
+                        weatherDiv.innerHTML = `🌡️ તાપમાન: <strong>${temp}°C</strong> | 💧 ભેજ: <strong>${humidity}%</strong>`;
+
+                        if (humidity > 80) {
+                            alertBox.style.display = 'block';
+                            alertBox.innerHTML = `⚠️ <strong>ચેતવણી:</strong> વાતાવરણમાં ભેજ ${humidity}% હોવાથી ગેરુ અને ટીક્કા રોગ ફેલાવાની શક્યતા વધુ છે.`;
+                        } else {
+                            alertBox.style.display = 'none';
+                        }
+                    } catch (error) {
+                        weatherDiv.innerHTML = "હવામાન માહિતી મેળવવામાં અસમર્થ.";
+                    }
+                }, () => {
+                    weatherDiv.innerHTML = "લોકેશન પરમિશન આપવાથી લાઈવ હવામાન જોઈ શકાશે.";
+                });
+            }
+        }
+
+        fetchWeather();
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('Service Worker Registered!'))
+                    .catch(err => console.log('Service Worker Error:', err));
+            });
+        }
+
+        // પોપ-અપ ખોલવાનું ફંક્શન
+        function openModal() {
+            document.getElementById("modal-content").innerHTML = currentDosageInfo;
+            document.getElementById("info-modal").style.display = "flex";
+        }
+
+        // પોપ-અપ બંધ કરવાનું ફંક્શન
+        function closeModal() {
+            document.getElementById("info-modal").style.display = "none";
+        }
+    </script>
+</body>
+</html>
